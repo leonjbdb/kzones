@@ -1,10 +1,4 @@
-function rectFromScreen(s) {
-  if (!s) return null;
-  if (s.geometry) {
-    return { name: String(s.name || ""), x: s.geometry.x, y: s.geometry.y, width: s.geometry.width, height: s.geometry.height };
-  }
-  return { name: String(s.name || ""), x: s.x || 0, y: s.y || 0, width: s.width || 0, height: s.height || 0 };
-}
+import { screenRect } from "../screens.mjs";
 
 function verticalOverlap(a, b) {
   return Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
@@ -19,7 +13,7 @@ function horizontalOverlap(a, b) {
 // shouldn't teleport diagonally.
 export function findScreenInDirection(screens, current, dir) {
   if (!screens || !current) return null;
-  const src = rectFromScreen(current);
+  const src = screenRect(current);
   if (!src) return null;
 
   let best = null;
@@ -27,7 +21,7 @@ export function findScreenInDirection(screens, current, dir) {
   let bestAxisDist = Infinity;
 
   for (let i = 0; i < screens.length; i++) {
-    const dst = rectFromScreen(screens[i]);
+    const dst = screenRect(screens[i]);
     if (!dst) continue;
     if (dst.name && src.name && dst.name === src.name) continue;
 

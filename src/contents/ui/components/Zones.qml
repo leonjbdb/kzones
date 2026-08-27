@@ -10,6 +10,12 @@ Item {
     property int highlightedZone
     property int layoutIndex
     property alias repeater: repeater
+    // Declared inputs rather than implicit lookups into the root scope, so
+    // this component works wherever it is instantiated and its dependencies
+    // are visible at the call site.
+    property var clientArea
+    property bool overlayVisible: true
+    property bool selectorExpanded: false
     // When set, render these zones instead of `config.layouts[layoutIndex].zones`.
     // Lets the fullscreen-drag preview reuse this component with a synthetic
     // single-zone layout covering the whole monitor.
@@ -53,10 +59,10 @@ Item {
             property var indicatorPos: (modelData && modelData.indicator && modelData.indicator.position) || "center"
             property bool active: overrideAlwaysActive || (highlightedZone == zoneIndex && currentLayout == layoutIndex)
 
-            x: ((modelData.x / 100) * (clientArea.width - zonePadding)) + zonePadding
-            y: ((modelData.y / 100) * (clientArea.height - zonePadding)) + zonePadding
-            implicitWidth: ((modelData.width / 100) * (clientArea.width - zonePadding)) - zonePadding
-            implicitHeight: ((modelData.height / 100) * (clientArea.height - zonePadding)) - zonePadding
+            x: ((modelData.x / 100) * (zones.clientArea.width - zonePadding)) + zonePadding
+            y: ((modelData.y / 100) * (zones.clientArea.height - zonePadding)) + zonePadding
+            implicitWidth: ((modelData.width / 100) * (zones.clientArea.width - zonePadding)) - zonePadding
+            implicitHeight: ((modelData.height / 100) * (zones.clientArea.height - zonePadding)) - zonePadding
 
             // zone indicator
             Rectangle {
@@ -68,7 +74,7 @@ Item {
                 radius: 10
                 border.color: colorHelper.getBorderColor(color)
                 border.width: 1
-                opacity: !showZoneOverlay ? 0 : (zoneSelector.expanded) ? 0 : (active ? 0.6 : 1)
+                opacity: !zones.overlayVisible ? 0 : zones.selectorExpanded ? 0 : (active ? 0.6 : 1)
                 scale: active ? 1.1 : 1
                 visible: config.enableZoneOverlay
                 // position
@@ -98,7 +104,7 @@ Item {
 
                 Behavior on scale {
                     NumberAnimation {
-                        duration: zoneSelector.expanded ? 0 : 150
+                        duration: zones.selectorExpanded ? 0 : 150
                     }
 
                 }

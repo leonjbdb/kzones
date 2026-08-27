@@ -1,5 +1,6 @@
-import { applyPadding, fullScreenRect } from "./geometry.mjs";
-import { captureMove, clearMemory } from "./move-memory.mjs";
+import { zoneRect } from "../zone-math.mjs";
+import { cloneGeom } from "../client-key.mjs";
+import { captureMove } from "./move-memory.mjs";
 
 // Walks an action (possibly a nested jump) and applies it to the client.
 // Records undo memory after every real move so the next opposite-direction
@@ -56,7 +57,7 @@ function applyZone(action, client, deps) {
     return;
   }
   const padding = (action.padding != null) ? action.padding : deps.getLayoutPadding(action.layoutIndex);
-  const rect = applyPadding(action.zone, padding, ca);
+  const rect = zoneRect(action.zone, padding, ca);
   // Unmaximize first so KWin restores the pre-max frameGeometry, then
   // capture that as oldGeometry BEFORE we overwrite with the zone rect.
   // Without this order, a window maximized via title-bar double-click + then
@@ -80,7 +81,7 @@ function applyFullscreen(action, client, deps) {
     deps.setFrameGeometry(client, { x: ca.x, y: ca.y, width: ca.width, height: ca.height });
     deps.setMaximize(client, true, true);
   } else {
-    const padded = applyPadding({ x: 0, y: 0, w: 100, h: 100 }, fsPad, ca);
+    const padded = zoneRect({ x: 0, y: 0, w: 100, h: 100 }, fsPad, ca);
     deps.setFrameGeometry(client, padded);
   }
 }
@@ -100,7 +101,3 @@ function applyJump(action, client, deps) {
   }
 }
 
-function cloneGeom(g) {
-  if (!g) return null;
-  return { x: g.x, y: g.y, width: g.width, height: g.height };
-}

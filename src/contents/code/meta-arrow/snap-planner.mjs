@@ -1,9 +1,9 @@
-import { isWidthPreserveDirection, eq, centerX, centerY, touchesEdge, TOL } from "./geometry.mjs";
+import { isWidthPreserveDirection, eq, centerX, centerY, touchesEdge, TOL, isFullscreenSized } from "./geometry.mjs";
 import { buildZonePool, findEntryMatchingSource } from "./zone-pool.mjs";
-import { axisPreserveFilter, perpendicularPreserveFilter, centerInDirectionFilter } from "./direction-rules.mjs";
+import { axisPreserveFilter, centerInDirectionFilter } from "./direction-rules.mjs";
 import { pickMinCost } from "./cost.mjs";
 import { findScreenInDirection } from "./monitor-adjacency.mjs";
-import { getMoveMemory, isFullscreenSized } from "./move-memory.mjs";
+import { getMoveMemory } from "./move-memory.mjs";
 
 const OPPOSITE = { up: "down", down: "up", left: "right", right: "left" };
 
@@ -46,7 +46,7 @@ function landingActionForJump(dstPool, source, dir, destScreenName) {
   const widthPreserve = isWidthPreserveDirection(dir);
   const perpDim = widthPreserve ? source.w : source.h;
 
-  let candidates = perpendicularPreserveFilter(dstPool, source, dir);
+  let candidates = axisPreserveFilter(dstPool, source, dir);
   if (candidates.length === 0) {
     if (eq(perpDim, 100)) return actionFullscreen(destScreenName);
     candidates = dstPool;

@@ -1,4 +1,6 @@
 SCRIPT_NAME := kzones
+# Plasma 6 ships qdbus6; older setups only have qdbus.
+QDBUS := $(shell command -v qdbus6 2>/dev/null || command -v qdbus 2>/dev/null)
 PKGFILE := $(SCRIPT_NAME).kwinscript
 SRC_DIR := src
 SESSION_WIDTH := 1920
@@ -9,11 +11,17 @@ SESSION_APPLICATIONS := # dolphin konsole kate
 
 .NOTPARALLEL: all
 
-.PHONY: all test build install uninstall clean enable disable start-session help
+.PHONY: all test test-unit build install uninstall clean enable disable reload-script start-session help
 
 all: install clean
 
 test: all start-session
+
+# Offline unit tests for the pure-JS modules. No QML / KWin required.
+test-unit:
+	@for t in bin/test-*.mjs; do echo "── $$t"; node $$t || exit 1; done
+	@echo "All unit tests passed."
+
 
 build: $(PKGFILE)
 
@@ -37,12 +45,24 @@ clean:
 enable:
 	@echo "Enabling $(SCRIPT_NAME)..."
 	@kwriteconfig6 --file kwinrc --group Plugins --key $(SCRIPT_NAME)Enabled true
-	@qdbus org.kde.KWin /KWin reconfigure
+	@$(QDBUS) org.kde.KWin /KWin reconfigure
 
 disable:
 	@echo "Disabling $(SCRIPT_NAME)..."
 	@kwriteconfig6 --file kwinrc --group Plugins --key $(SCRIPT_NAME)Enabled false
-	@qdbus org.kde.KWin /KWin reconfigure
+	@$(QDBUS) org.kde.KWin /KWin reconfigure
+
+# Reinstall and restart the script in place.
+#
+# A bare `reconfigure` after an install leaves the previous script instance's
+# client-signal handlers connected, so every reload stacks another generation
+# of handlers that race the live one. Toggling the plugin off and on tears the
+# old instance down first.
+reload-script:
+	@$(MAKE) --no-print-directory install
+	@$(MAKE) --no-print-directory clean
+	@$(MAKE) --no-print-directory disable
+	@$(MAKE) --no-print-directory enable
 
 restart-kwin:
 	if [ "$$XDG_SESSION_TYPE" = "x11" ]; then \
@@ -90,11 +110,13 @@ help:
 	@echo "Makefile commands:"
 	@echo "  all            - Build and install the script (default)"
 	@echo "  test           - Build, install, and start a nested session"
+	@echo "  test-unit      - Run the offline unit tests"
 	@echo "  build          - Package the script into a .kwinscript file"
 	@echo "  install        - Install the script"
 	@echo "  uninstall      - Uninstall the script"
 	@echo "  clean          - Remove the packaged .kwinscript file"
 	@echo "  enable         - Enable the script in KWin"
+	@echo "  reload-script  - Reinstall and cleanly restart the script"
 	@echo "  disable        - Disable the script in KWin"
 	@echo "  restart-kwin   - Restart KWin to apply changes"
 	@echo "  logs           - View KWin logs for debugging"

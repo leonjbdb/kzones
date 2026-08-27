@@ -1,4 +1,3 @@
-import { eq } from "./geometry.mjs";
 import { keyFor, cloneGeom } from "../client-key.mjs";
 
 // Universal one-step undo memory for Meta+Arrow moves.
@@ -37,23 +36,3 @@ export function clearMemory(client) {
   memory.delete(key);
 }
 
-export function isFullscreenSized(client, clientArea) {
-  if (!client || !clientArea || !clientArea.width || !clientArea.height) return false;
-  const g = client.frameGeometry;
-  const xPct = (g.x - clientArea.x) / clientArea.width * 100;
-  const yPct = (g.y - clientArea.y) / clientArea.height * 100;
-  const wPct = g.width / clientArea.width * 100;
-  const hPct = g.height / clientArea.height * 100;
-  return eq(xPct, 0) && eq(yPct, 0) && eq(wPct, 100) && eq(hPct, 100);
-}
-
-export function memoryDriftedFromSnap(client) {
-  const m = getMoveMemory(client);
-  if (!m || !m.snappedGeometry) return false;
-  const g = client.frameGeometry;
-  const s = m.snappedGeometry;
-  return Math.abs(g.x - s.x) > 4
-      || Math.abs(g.y - s.y) > 4
-      || Math.abs(g.width  - s.width)  > 4
-      || Math.abs(g.height - s.height) > 4;
-}

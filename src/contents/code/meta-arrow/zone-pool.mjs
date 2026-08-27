@@ -1,10 +1,5 @@
 import { eq } from "./geometry.mjs";
-import { layoutAppliesToScreen } from "../core.mjs";
-
-// QML coerces JS arrays to QVariantList, breaking Array.isArray.
-function isArrayLike(x) {
-  return x != null && typeof x !== "string" && typeof x.length === "number";
-}
+import { layoutAppliesToScreen, isArrayLike } from "../layouts.mjs";
 
 // User-authored JSON sometimes stringifies booleans (e.g. "true"). Be lenient
 // so a layout JSON typo doesn't silently disable skipSmartHotkeys.

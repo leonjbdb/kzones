@@ -1,13 +1,9 @@
-import { eq, touchesEdge, isWidthPreserveDirection, TOL, centerX, centerY } from "./geometry.mjs";
+import { eq, isWidthPreserveDirection, TOL, centerX, centerY } from "./geometry.mjs";
 
-export function edgeFilter(pool, dir) {
-  const out = [];
-  for (let i = 0; i < pool.length; i++) {
-    if (touchesEdge(pool[i], dir)) out.push(pool[i]);
-  }
-  return out;
-}
-
+// Keeps candidates matching the source on the axis the move must not change:
+// width for vertical moves, height for horizontal ones. Cross-monitor landings
+// use the same rule — there the preserved axis is the one perpendicular to the
+// direction of travel.
 export function axisPreserveFilter(pool, source, dir) {
   if (!source) return pool.slice();
   const widthPreserve = isWidthPreserveDirection(dir);
@@ -17,22 +13,6 @@ export function axisPreserveFilter(pool, source, dir) {
     if (widthPreserve ? eq(c.w, source.w) : eq(c.h, source.h)) out.push(c);
   }
   return out;
-}
-
-export function directionModifyFilter(pool, source, dir) {
-  if (!source) return pool.slice();
-  const widthPreserve = isWidthPreserveDirection(dir);
-  const out = [];
-  for (let i = 0; i < pool.length; i++) {
-    const c = pool[i];
-    // Vertical motion modifies height; horizontal modifies width.
-    if (widthPreserve ? !eq(c.h, source.h) : !eq(c.w, source.w)) out.push(c);
-  }
-  return out;
-}
-
-export function perpendicularPreserveFilter(pool, source, dir) {
-  return axisPreserveFilter(pool, source, dir);
 }
 
 // Candidate's geometric centre must lie strictly in `dir` of source's centre.

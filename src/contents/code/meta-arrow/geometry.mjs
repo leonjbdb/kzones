@@ -4,10 +4,6 @@ export function eq(a, b) {
   return Math.abs(a - b) < TOL;
 }
 
-export function area(z) {
-  return z.w * z.h;
-}
-
 export function centerX(z) {
   return z.x + z.w / 2;
 }
@@ -30,10 +26,6 @@ export function isWidthPreserveDirection(dir) {
   return dir === "up" || dir === "down";
 }
 
-export function rectsApproxEqual(a, b) {
-  return eq(a.x, b.x) && eq(a.y, b.y) && eq(a.w, b.w) && eq(a.h, b.h);
-}
-
 export function clientToSourcePct(client, clientArea) {
   if (!client || !clientArea || !clientArea.width || !clientArea.height) return null;
   const g = client.frameGeometry;
@@ -53,31 +45,6 @@ export function clientToSourcePct(client, clientArea) {
     y: (top  - clientArea.y) / clientArea.height * 100,
     w: wPx / clientArea.width  * 100,
     h: hPx / clientArea.height * 100,
-  };
-}
-
-// Replicates matchZone() padding formula in main.qml: zones are inset by `padding`
-// on top/left, and adjacent zones leave a `padding` gap between them.
-export function applyPadding(zone, padding, clientArea) {
-  const p = padding || 0;
-  const x = ((zone.x / 100) * (clientArea.width  - p)) + p + clientArea.x;
-  const y = ((zone.y / 100) * (clientArea.height - p)) + p + clientArea.y;
-  const w = ((zone.w  / 100) * (clientArea.width  - p)) - p;
-  const h = ((zone.h / 100) * (clientArea.height - p)) - p;
-  return {
-    x: Math.round(x),
-    y: Math.round(y),
-    width: Math.round(w),
-    height: Math.round(h),
-  };
-}
-
-export function fullScreenRect(clientArea) {
-  return {
-    x: Math.round(clientArea.x),
-    y: Math.round(clientArea.y),
-    width: Math.round(clientArea.width),
-    height: Math.round(clientArea.height),
   };
 }
 
